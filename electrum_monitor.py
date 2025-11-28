@@ -93,11 +93,11 @@ class ElectrumMonitor:
 
                     for i, part in enumerate(parts):
                         if part == "txs" and i + 1 < len(parts):
-                            txs = parts[i + 1].rstrip(',')
+                            txs = parts[i + 1].rstrip(',').strip()
                         elif part == "MB" and i - 1 >= 0:
-                            size = parts[i - 1]
+                            size = parts[i - 1].strip()
                         elif part == "addresses" and i - 1 >= 0:
-                            addresses = parts[i - 1]
+                            addresses = parts[i - 1].strip()
 
                     return {
                         'transactions': txs,
@@ -106,7 +106,7 @@ class ElectrumMonitor:
                         'last_update': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     }
 
-            return {'transactions': '0', 'size_mb': '0.00', 'addresses': '0', 'last_update': 'N/A'}
+            return {'transactions': '0', 'size_mb': '0.00', 'addresses': '0', 'last_update': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
         except Exception as e:
             print(f"⚠️  Konnte Mempool-Informationen nicht abrufen: {e}")
             return {'transactions': 'N/A', 'size_mb': 'N/A', 'addresses': 'N/A', 'last_update': 'N/A'}
