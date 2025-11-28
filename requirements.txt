@@ -1,0 +1,17 @@
+# No external dependencies required
+# Uses only Python standard library modules:
+
+# subprocess - For Docker command execution
+# json - For JSON parsing and generation
+# time - For delays and timing
+# datetime - For timestamp generation
+# sys - For system operations
+# typing - For type hints (Python 3.5+)
+# argparse - For command line argument parsing
+
+# Optional dependencies for web server deployment:
+# requests - For testing web endpoints
+# flask - For alternative web server (if desired)
+# gunicorn - For production web server (if desired)
+
+# Note: This script is designed to work with Python standard library only

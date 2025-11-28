@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTX ElectrumX Status</title>
+    <style>
+        /* Bitcore BTX Style */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #e8e8e8;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1260px;
+            margin: 0 auto;
+            padding: 18px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 16px;
+            padding: 15px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 13.5px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            margin-bottom: 10px;
+        }
+
+        .logo img {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            box-shadow: 0 4.5px 18px rgba(0, 212, 255, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .logo img:hover {
+            transform: scale(1.1);
+            box-shadow: 0 7.2px 22.5px rgba(0, 212, 255, 0.5);
+        }
+
+        .header h1 {
+            font-size: 2.25em;
+            margin-bottom: 0px;
+            font-weight: 300;
+        }
+
+        .header p {
+            color: #a0a0a0;
+            font-size: 1.1em;
+        }
+
+        /* Status Grid */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(288px, 1fr));
+            gap: 22.5px;
+            margin-bottom: 27px;
+        }
+
+        .status-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 13.5px;
+            padding: 22.5px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .status-card:hover {
+            transform: translateY(-4.5px);
+            box-shadow: 0 9px 27px rgba(0, 212, 255, 0.1);
+            border-color: rgba(0, 212, 255, 0.3);
+        }
+
+        .status-card h3 {
+            font-size: 1.26em;
+            margin-bottom: 18px;
+            color: #00d4ff;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .status-card h3::before {
+            font-size: 1.2em;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 13.5px 0;
+            padding: 10.8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-label {
+            color: #a0a0a0;
+            font-size: 0.81em;
+        }
+
+        .status-value {
+            font-weight: 600;
+            font-size: 0.99em;
+        }
+
+        /* Status Colors */
+        .sync-ok { color: #00ff88; }
+        .sync-warning { color: #ffaa00; }
+        .sync-error { color: #ff4444; }
+        .highlight { color: #00d4ff; }
+
+        /* Special Cards */
+        .main-status {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(0, 255, 136, 0.1) 100%);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+
+        .main-status h3 {
+            color: #00ff88;
+        }
+
+        /* Progress Bars */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d4ff, #00ff88);
+            border-radius: 4px;
+            transition: width 1s ease;
+        }
+
+        /* Controls */
+        .controls {
+            text-align: center;
+            margin: 36px 0;
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, #00d4ff 0%, #00ff88 100%);
+            color: #1a1a2e;
+            border: none;
+            padding: 13.5px 27px;
+            border-radius: 22.5px;
+            cursor: pointer;
+            font-size: 14.4px;
+            font-weight: 600;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin: 0 9px;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-1.8px);
+            box-shadow: 0 4.5px 18px rgba(0, 212, 255, 0.4);
+        }
+
+        .refresh-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Loading Animation */
+        .loading {
+            text-align: center;
+            padding: 50px;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid #00d4ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 45px;
+            padding: 27px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 13.5px;
+            color: #a0a0a0;
+        }
+
+        .timestamp {
+            font-size: 0.81em;
+            margin-top: 9px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 9px;
+            }
+
+            .status-grid {
+                grid-template-columns: 1fr;
+                gap: 18px;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .logo img {
+                width: 54px;
+                height: 54px;
+            }
+        }
+
+        /* Pulse Animation for live data */
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+
+        .live-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #00ff88;
+            border-radius: 50%;
+            margin-left: 10px;
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <img src="/btx-logo.png" alt="Bitcore BTX Logo" />
+            </div>
+            <h1>BTX ElectrumX Status</h1>
+        </div>
+
+        <div id="status-content">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <p>Loading BTX Status Data...</p>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="refresh-btn" onclick="loadStatus()">🔄 Refresh Status</button>
+            <button class="refresh-btn" onclick="location.reload()">🔃 Reload Page</button>
+        </div>
+
+        <div class="footer">
+            <div>Bitcore BTX ElectrumX Node Status <span class="live-indicator"></span></div>
+            <div class="timestamp" id="timestamp">Last Update: --</div>
+        </div>
+    </div>
+
+    <script>
+        let isAutoRefresh = true;
+
+        async function loadStatus() {
+            try {
+                const response = await fetch('/status.json');
+                if (!response.ok) throw new Error('BTX Status unavailable');
+
+                const data = await response.json();
+                displayStatus(data);
+                updateTimestamp();
+            } catch (error) {
+                document.getElementById('status-content').innerHTML = `
+                    <div class="status-grid">
+                        <div class="status-card main-status">
+                            <h3>❌ BTX Status Error</h3>
+                            <div class="status-item">
+                                <span>Error Message:</span>
+                                <span class="status-value sync-error">${error.message}</span>
+                            </div>
+                            <div class="status-item">
+                                <span>Server URL:</span>
+                                <span class="status-value">/status.json</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                updateTimestamp();
+            }
+        }
+
+        function displayStatus(data) {
+            // Sync Status
+            let syncClass = 'sync-warning';
+            let syncText = 'Unbekannt';
+            let syncProgress = 0;
+
+            if (data.daemon_info && data.daemon_info.daemon_height && data.daemon_info.db_height) {
+                const daemonHeight = parseInt(data.daemon_info.daemon_height);
+                const dbHeight = parseInt(data.daemon_info.db_height);
+
+                if (daemonHeight === dbHeight) {
+                    syncClass = 'sync-ok';
+                    syncText = '✅ Fully Synced';
+                    syncProgress = 100;
+                } else {
+                    syncClass = 'sync-warning';
+                    syncProgress = Math.round((dbHeight / daemonHeight) * 100);
+                    syncText = `⚠️ Syncing (${syncProgress}%)`;
+                }
+            }
+
+            // Format uptime
+            const uptime = data.server_info?.uptime || 'N/A';
+
+            const html = `
+                <div class="status-grid">
+                    <!-- Main Status Card -->
+                    <div class="status-card main-status">
+                        <h3>⛓️ BTX Blockchain Status</h3>
+                        <div class="status-item">
+                            <span>Sync Status:</span>
+                            <span class="status-value ${syncClass}">${syncText}</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${syncProgress}%"></div>
+                        </div>
+                        <div class="status-item">
+                            <span>Daemon Height:</span>
+                            <span class="status-value highlight">${data.daemon_info?.daemon_height || 'N/A'}</span>
+                        </div>
+                        <div class="status-item">
+                            <span>Database Height:</span>
+                            <span class="status-value highlight">${data.daemon_info?.db_height || 'N/A'}</span>
+                        </div>
+                        <div class="status-item">
+                            <span>Coin:</span>
+                            <span class="status-value">${data.server_info?.coin || 'N/A'}</span>
+                        </div>
+                    </div>
+
+                    <!-- Server Information -->
+                    <div class="status-card">
+                        <h3>🖥️ Server Information</h3>
+                        <div class="status-item">
+                            <span>Version:</span>
+                            <span class="status-value">${data.server_info?.version || 'N/A'}</span>
+                        </div>
+                        <div class="status-item">
+                            <span>Uptime:</span>
+                            <span class="status-value">${uptime}</span>
+                        </div>
+                        <div class="status-item">
+                            <span>Process ID:</span>
+                            <span class="status-value">${data.server_info?.pid || 'N/A'}</span>
+                        </div>
+                                            </div>
+
+                    <!-- Mempool Status -->
+                    <div class="status-card">
+                        <h3>💾 BTX Mempool</h3>
+                        <div class="status-item">
+                            <span>Transactions:</span>
+                            <span class="status-value highlight">${data.mempool?.transactions || '0'}</span>
+                        </div>
+                        <div class="status-item">
+                            <span>Size:</span>
+                            <span class="status-value">${data.mempool?.size_mb || '0.00'} MB</span>
+                        </div>
+                        <div class="status-item">
+                            <span>Addresses:</span>
+                            <span class="status-value">${data.mempool?.addresses || '0'}</span>
+                        </div>
+                        <div class="status-item">
+                            <span>Last Update:</span>
+                            <span class="status-value">${data.mempool?.last_update || 'N/A'}</span>
+                        </div>
+                    </div>
+
+                    <!-- Performance Metrics -->
+                    <div class="status-card">
+                        <h3>📊 Performance Metrics</h3>
+                        <div class="status-item">
+                            <span>Total Requests:</span>
+                            <span class="status-value highlight">${(data.server_info?.['request total'] || 0).toLocaleString()}</span>
+                        </div>
+                        <div class="status-item">
+                            <span>Groups:</span>
+                            <span class="status-value">${data.server_info?.groups || '0'}</span>
+                        </div>
+                        <div class="status-item">
+                            <span>DB Flush Count:</span>
+                            <span class="status-value">${data.server_info?.db_flush_count || '0'}</span>
+                        </div>
+                        <div class="status-item">
+                            <span>Transactions Sent:</span>
+                            <span class="status-value">${data.server_info?.['txs sent'] || '0'}</span>
+                        </div>
+                    </div>
+
+                  </div>
+            `;
+
+            document.getElementById('status-content').innerHTML = html;
+        }
+
+        function updateTimestamp() {
+            document.getElementById('timestamp').textContent =
+                `Last Update: ${new Date().toLocaleString('en-US')}`;
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            if (isAutoRefresh) {
+                loadStatus();
+            }
+        }, 30000);
+
+        // Initial load
+        loadStatus();
+    </script>
+</body>
+</html>
