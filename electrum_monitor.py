@@ -8,6 +8,7 @@ import subprocess
 import json
 import time
 import datetime
+from zoneinfo import ZoneInfo
 import sys
 from typing import Dict, List, Optional
 
@@ -15,6 +16,11 @@ class ElectrumMonitor:
     def __init__(self, container_name: str = "electrumx"):
         self.container_name = container_name
         self.rpc_cmd = f"docker exec {container_name} electrumx_rpc"
+        self.tz = ZoneInfo("Europe/Berlin")
+
+    def get_current_time(self):
+        """Gibt die aktuelle Zeit in Europe/Berlin Zeitzone zurück"""
+        return datetime.datetime.now(self.tz)
 
     def execute_rpc(self, command: str) -> Optional[Dict]:
         """Führt einen RPC-Befehl im Docker-Container aus"""
@@ -103,10 +109,10 @@ class ElectrumMonitor:
                         'transactions': txs,
                         'size_mb': size,
                         'addresses': addresses,
-                        'last_update': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        'last_update': self.get_current_time().strftime("%Y-%m-%d %H:%M:%S")
                     }
 
-            return {'transactions': '0', 'size_mb': '0.00', 'addresses': '0', 'last_update': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+            return {'transactions': '0', 'size_mb': '0.00', 'addresses': '0', 'last_update': self.get_current_time().strftime("%Y-%m-%d %H:%M:%S")}
         except Exception as e:
             print(f"⚠️  Konnte Mempool-Informationen nicht abrufen: {e}")
             return {'transactions': 'N/A', 'size_mb': 'N/A', 'addresses': 'N/A', 'last_update': 'N/A'}
@@ -156,7 +162,7 @@ class ElectrumMonitor:
         """Zeigt ein Dashboard mit allen wichtigen Informationen"""
         print("\n" + "="*60)
         print("🔷 ELECTRUMX BLOCKCHAIN MONITOR")
-        print(f"📅 {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"📅 {self.get_current_time().strftime('%Y-%m-%d %H:%M:%S')}")
         print("="*60)
 
         # Server-Info
@@ -245,7 +251,7 @@ def main():
     if args.json:
         # JSON-Modus
         data = {
-            'timestamp': datetime.datetime.now().isoformat(),
+            'timestamp': monitor.get_current_time().isoformat(),
             'server_info': monitor.get_server_info(),
             'mempool': monitor.get_mempool_info(),
             'daemon_info': monitor.get_daemon_info()
@@ -257,7 +263,7 @@ def main():
 
         # Speichere als status.json in /var/www/status/
         try:
-            with open('/var/www/status/status.json', 'w') as f:
+            with open('/var/www/web/status.json', 'w') as f:
                 f.write(json_output)
             print("✅ JSON-Datei gespeichert: /var/www/status/status.json")
         except Exception as e:
